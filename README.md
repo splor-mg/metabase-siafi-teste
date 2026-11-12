@@ -3,12 +3,15 @@
 Instância de teste do Metabase (open source) com Postgres e os dados do
 [dados-siafi-2026](https://github.com/splor-mg/dados-siafi-2026). Tudo roda em Docker.
 A documentação de uso está em `docs/index.md`.
+O roteiro para publicar temporariamente o Metabase e compartilhar um painel público
+está em [`DEPLOY_RENDER.md`](DEPLOY_RENDER.md). Após habilitar o compartilhamento no
+Metabase, inclua aqui o link público gerado para o painel.
 
 ## Passo a passo
 
 Requisitos: Docker, Python 3 e git.
 
-1. `cp .env.exemplo .env` e troque as 3 senhas
+1. `cp .env.exemplo .env` e substitua todos os valores de exemplo por senhas exclusivas
 2. `git clone https://github.com/splor-mg/dados-siafi-2026.git ../dados-siafi-2026`
 3. `docker compose up -d`
 4. `scripts/docker_db.sh ../dados-siafi-2026`
@@ -19,8 +22,7 @@ Requisitos: Docker, Python 3 e git.
 O passo 4 cria o banco, carrega os dados e termina mostrando a contagem de linhas de
 `siafi.execucao`. Ele pode ser executado de novo sem apagar nada.
 
-Login do admin: `admin@teste.local`, com a senha definida em `MB_ADMIN_PASSWORD`
-(o padrão está em `scripts/metabase_setup.py`; troque após o primeiro acesso).
+Login do admin: `admin@teste.local`, com a senha exclusiva definida em `MB_ADMIN_PASSWORD`.
 
 ## Problemas comuns
 

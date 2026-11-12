@@ -1,0 +1,64 @@
+databases:
+  # Single free Postgres holds the SIAFI schemas and Metabase's app metadata.
+  # Render allows only one active free Postgres per workspace; it expires in 30 days.
+  - name: metabase-siafi-db
+    region: ohio
+    databaseName: siafi_2026
+    user: siafi_admin
+    postgresMajorVersion: "16"
+    plan: free
+
+services:
+  - type: web
+    name: metabase-siafi-teste
+    region: ohio
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: MB_DB_TYPE
+        value: postgres
+      - key: MB_DB_DBNAME
+        fromDatabase:
+          name: metabase-siafi-db
+          property: database
+      - key: MB_DB_HOST
+        fromDatabase:
+          name: metabase-siafi-db
+          property: host
+      - key: MB_DB_PORT
+        fromDatabase:
+          name: metabase-siafi-db
+          property: port
+      - key: MB_DB_USER
+        fromDatabase:
+          name: metabase-siafi-db
+          property: user
+      - key: MB_DB_PASS
+        fromDatabase:
+          name: metabase-siafi-db
+          property: password
+      - key: SIAFI_DB
+        fromDatabase:
+          name: metabase-siafi-db
+          property: database
+      - key: DB_HOST_FOR_METABASE
+        fromDatabase:
+          name: metabase-siafi-db
+          property: host
+      - key: DB_PORT_FOR_METABASE
+        fromDatabase:
+          name: metabase-siafi-db
+          property: port
+      - key: METABASE_RO_USER
+        value: metabase_leitor
+      - key: METABASE_RO_PASSWORD
+        sync: false
+      - key: DB_SSL
+        value: "false"
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xmx256m

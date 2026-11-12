@@ -45,3 +45,7 @@ cada um em um grupo (Analistas, Leitores, Gestores).
 - O `.env` contém senhas e não deve ser versionado.
 - Se a rede usa proxy e retorna erro 407, o `metabase_setup.py` já ignora o proxy ao falar com `localhost`.
 - O GitHub Pages publica apenas esta documentação; o Metabase não roda no Pages.
+- Para publicar temporariamente o Metabase e compartilhar um painel público, consulte
+  o [roteiro do Render](../DEPLOY_RENDER.md).
+- O papel `metabase_leitor` acessa somente as views agregadas em `painel`; não
+  tem leitura das tabelas brutas em `siafi`.

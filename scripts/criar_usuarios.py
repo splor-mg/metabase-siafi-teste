@@ -18,7 +18,12 @@ import requests
 
 MB = os.environ.get("MB_URL", "http://localhost:3000").rstrip("/")
 ADMIN_EMAIL = os.environ.get("MB_ADMIN_EMAIL", "admin@teste.local")
-ADMIN_PASSWORD = os.environ.get("MB_ADMIN_PASSWORD", "Trocar-Esta-Senha-123")
+ADMIN_PASSWORD = os.environ.get("MB_ADMIN_PASSWORD")
+TEST_USER_PASSWORD = os.environ.get("MB_TEST_USER_PASSWORD")
+if not ADMIN_PASSWORD:
+    sys.exit("Defina MB_ADMIN_PASSWORD com uma senha exclusiva antes de usar este script.")
+if not TEST_USER_PASSWORD:
+    sys.exit("Defina MB_TEST_USER_PASSWORD com uma senha exclusiva antes de criar usuarios de teste.")
 
 s = requests.Session()
 s.trust_env = False   # ignora proxy do terminal (evita HTTP 407 em localhost)
@@ -50,7 +55,7 @@ for nome, email, grupo in [("Ana Analista", "analista@teste.local", "Analistas")
         continue
     call("POST", "/user", json={
         "first_name": nome.split()[0], "last_name": nome.split()[1],
-        "email": email, "password": "Teste-Senha-123",
+        "email": email, "password": TEST_USER_PASSWORD,
         "user_group_memberships": [
             {"id": grupos["all users"], "is_group_manager": False},
             {"id": grupos[grupo.lower()], "is_group_manager": False},

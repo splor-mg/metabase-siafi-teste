@@ -14,11 +14,23 @@ set -euo pipefail
 
 DADOS_DIR="${1:?informe o diretorio data/ do repositorio}"
 cd "$(dirname "$0")/.."
-set -a; . ./.env; set +a
+ENV_FILE="${ENV_FILE:-.env}"
+set -a; . "$ENV_FILE"; set +a
 export PGPASSWORD="$SIAFI_OWNER_PASSWORD"
 PSQL=(psql -h "$PGHOST" -p "$PGPORT" -U "$SIAFI_OWNER" -d "$SIAFI_DB" -v ON_ERROR_STOP=1 -q)
 
-for arquivo in "$DADOS_DIR"/*.csv.gz; do
+arquivos=()
+if [[ -n "${SIAFI_LOAD_TABLES:-}" ]]; then
+    for tabela in $SIAFI_LOAD_TABLES; do
+        [[ "$tabela" =~ ^[a-z0-9_]+$ ]] || { echo "Nome de tabela invalido: $tabela" >&2; exit 1; }
+        arquivos+=("$DADOS_DIR/$tabela.csv.gz")
+    done
+else
+    arquivos=("$DADOS_DIR"/*.csv.gz)
+fi
+
+for arquivo in "${arquivos[@]}"; do
+    [[ -f "$arquivo" ]] || { echo "Arquivo nao encontrado: $arquivo" >&2; exit 1; }
     tabela="$(basename "$arquivo" .csv.gz)"
     # Le SO a 1a linha, sem pipe: "zcat | head -1" + pipefail => SIGPIPE (141) e o
     # set -e aborta o script em silencio. Os CSV tem final de linha CRLF, entao
@@ -33,7 +45,7 @@ for arquivo in "$DADOS_DIR"/*.csv.gz; do
 done
 
 # Estatisticas para o planejador de consultas (importante p/ o Metabase ficar rapido)
-for arquivo in "$DADOS_DIR"/*.csv.gz; do
+for arquivo in "${arquivos[@]}"; do
     "${PSQL[@]}" -c "ANALYZE siafi.$(basename "$arquivo" .csv.gz);"
 done
 echo "ANALYZE concluido."

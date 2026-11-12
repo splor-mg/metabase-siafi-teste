@@ -11,7 +11,8 @@ Uso (Metabase em http://localhost:3000, recem-instalado, ainda sem setup):
     pip install requests
     set -a; . ./.env; set +a
     python3 scripts/metabase_setup.py
-Variaveis opcionais: MB_URL, MB_ADMIN_EMAIL, MB_ADMIN_PASSWORD, DB_HOST_FOR_METABASE
+Variaveis opcionais: MB_URL, MB_ADMIN_EMAIL, DB_HOST_FOR_METABASE
+Defina MB_ADMIN_PASSWORD antes de rodar. MB_TEST_USER_PASSWORD e opcional.
 """
 import os
 import sys
@@ -20,13 +21,16 @@ import requests
 
 MB = os.environ.get("MB_URL", "http://localhost:3000").rstrip("/")
 ADMIN_EMAIL = os.environ.get("MB_ADMIN_EMAIL", "admin@teste.local")
-ADMIN_PASSWORD = os.environ.get("MB_ADMIN_PASSWORD", "Trocar-Esta-Senha-123")
+ADMIN_PASSWORD = os.environ.get("MB_ADMIN_PASSWORD")
+if not ADMIN_PASSWORD:
+    sys.exit("Defina MB_ADMIN_PASSWORD com uma senha exclusiva antes de configurar o Metabase.")
 # No docker-compose o Postgres e o servico "postgres" (mesma rede do Metabase)
 DB_HOST = os.environ.get("DB_HOST_FOR_METABASE", "postgres")
 DB_PORT = 5432  # porta interna do container (a 5433 so existe no seu host)
 DB_NAME = os.environ["SIAFI_DB"]
 DB_USER = os.environ["METABASE_RO_USER"]
 DB_PASS = os.environ["METABASE_RO_PASSWORD"]
+TEST_USER_PASSWORD = os.environ.get("MB_TEST_USER_PASSWORD")
 
 s = requests.Session()
 # Ignora HTTP_PROXY/HTTPS_PROXY do terminal: o Metabase esta em localhost e, se a chamada
@@ -86,15 +90,17 @@ id_all_users = next((x["id"] for x in todos if x["name"].lower() == "all users")
 for nome, email, grupo in [("Ana Analista", "analista@teste.local", "Analistas"),
                            ("Lia Leitora", "leitor@teste.local", "Leitores"),
                            ("Gil Gestor", "gestor@teste.local", "Gestores")]:
-    if grupo in grupos:
+    if grupo in grupos and TEST_USER_PASSWORD:
         call("POST", "/user", json={
             "first_name": nome.split()[0], "last_name": nome.split()[1],
-            "email": email, "password": "Teste-Senha-123",
+            "email": email, "password": TEST_USER_PASSWORD,
             "user_group_memberships": [
                 {"id": id_all_users, "is_group_manager": False},
                 {"id": grupos[grupo], "is_group_manager": False},
             ],
         })
+    elif grupo in grupos:
+        print("[INFO] Usuarios de teste ignorados. Defina MB_TEST_USER_PASSWORD para cria-los.")
 
 # ---------- 5) colecoes ----------
 col = {}
