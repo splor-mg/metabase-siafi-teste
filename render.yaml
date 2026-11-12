@@ -61,4 +61,10 @@ services:
       - key: DB_SSL
         value: "false"
       - key: JAVA_TOOL_OPTIONS
-        value: -Xmx256m
+        value: "-Xms64m -Xmx192m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=32m -XX:MaxDirectMemorySize=48m -XX:ActiveProcessorCount=1 -Xss256k"
+      - key: MB_DISABLE_SCHEDULER
+        value: "true"
+      - key: MB_LOAD_ANALYTICS_CONTENT
+        value: "false"
+      - key: MB_APPLICATION_DB_MAX_CONNECTION_POOL_SIZE
+        value: "5"
