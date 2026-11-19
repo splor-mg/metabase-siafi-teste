@@ -1,5 +1,4 @@
 .env
-.env.render.local
 .venv/
 __pycache__/
 *.log
